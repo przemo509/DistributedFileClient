@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 		// Handle response headers arriving.
 		.then([=](http_response response)
 	{
-		printf("Client Received response status code:%u\n", response.status_code());
+		printf("Client2 Received response status code:%u\n", response.status_code());
 
 		// Write response body into the file.
 		return response.body().read_to_end(fileStream->streambuf());
