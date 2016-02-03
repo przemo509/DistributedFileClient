@@ -1,6 +1,8 @@
 #pragma once
+#include <string>
 #include <boost/property_tree/ptree.hpp>
 #include "server_config.h"
+
 class config
 {
 public:
@@ -9,7 +11,7 @@ public:
 
 	std::string getLogFileFullPath() { return logFileFullPath; }
 	std::string getNewTransactionId();
-	server_config getServerConfig(int index) { return servers[index]; }
+	server_config getServerConfig(int id);
 	int getServersCount() { return servers.size(); }
 private:
 	static const std::string TRANSACTION_ID_SEPARATOR;

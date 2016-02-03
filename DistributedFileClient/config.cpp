@@ -2,26 +2,30 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/log/trivial.hpp>
+#include <string>
+#include <vector>
 
 // MAC Address - Windows only
 #include <windows.h>
 #include <iphlpapi.h>
 
 #include "config.h"
+#include "server_config.h"
 
 using namespace boost::property_tree;
+using namespace std;
 
-const std::string config::TRANSACTION_ID_SEPARATOR = "|";
+const string config::TRANSACTION_ID_SEPARATOR = "|";
 
-config::config(const std::string& pathToFile)
+config::config(const string& pathToFile)
 {
 	BOOST_LOG_TRIVIAL(info) << "Reading client configuration file [" << pathToFile << "]:";
 	ptree tree;
 	read_json(pathToFile, tree);
 
-	logFileFullPath = tree.get<std::string>("log_file_full_path");
+	logFileFullPath = tree.get<string>("log_file_full_path");
 	BOOST_LOG_TRIVIAL(info) << " - log file is            " << logFileFullPath;
-	id = tree.get<std::string>("id");
+	id = tree.get<string>("id");
 	BOOST_LOG_TRIVIAL(info) << " - client id is           " << id;
 	macAddress = getMAC("Intel(R) Centrino(R) Wireless-N 2230");
 	BOOST_LOG_TRIVIAL(info) << " - client mac address is  " << macAddress;
@@ -32,7 +36,7 @@ config::config(const std::string& pathToFile)
 	BOOST_LOG_TRIVIAL(info) << "Reading server configuration file - OK";
 }
 
-std::string config::getMAC(std::string networkCardName) {
+string config::getMAC(string networkCardName) {
 	IP_ADAPTER_INFO *info = NULL, *pos;
 	DWORD size = 0;
 
@@ -46,19 +50,19 @@ std::string config::getMAC(std::string networkCardName) {
 			char mac[18];
 			sprintf_s(mac, "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x", pos->Address[0], pos->Address[1], pos->Address[2], pos->Address[3], pos->Address[4], pos->Address[5]);
 			free(info);
-			return std::string(mac);
+			return string(mac);
 		}
 	}
 
 	free(info);
-	throw std::exception(("Network card [" + networkCardName + "] not found!").c_str());
+	throw exception(("Network card [" + networkCardName + "] not found!").c_str());
 }
 
 void config::setServers(ptree& serversJsonArray) {
 	for (auto& item : serversJsonArray) {
 		server_config serverConfig(
 			item.second.get<int>("ID"),
-			item.second.get<std::string>("hostname"),
+			item.second.get<string>("hostname"),
 			item.second.get<int>("port"));
 		servers.push_back(serverConfig);
 	}
@@ -67,15 +71,24 @@ void config::setServers(ptree& serversJsonArray) {
 void config::check() {
 	// log file
 	if (!boost::filesystem::exists(logFileFullPath)) {
-		throw std::exception(("Log file [" + logFileFullPath + "] does not exist!").c_str());
+		throw exception(("Log file [" + logFileFullPath + "] does not exist!").c_str());
 	}
 	if (!boost::filesystem::is_regular_file(logFileFullPath)) {
-		throw std::exception(("Path [" + logFileFullPath + "] is not a file!").c_str());
+		throw exception(("Path [" + logFileFullPath + "] is not a file!").c_str());
 	}
 }
 
-std::string config::getNewTransactionId() {
-	return macAddress + TRANSACTION_ID_SEPARATOR + id + TRANSACTION_ID_SEPARATOR + std::to_string(std::time(NULL));
+server_config config::getServerConfig(int id) {
+	for (int i = 0; i < getServersCount(); ++i) {
+		if (servers[i].getId() == id) {
+			return servers[i];
+		}
+	}
+	throw exception(("No server has ID = [" + to_string(id) + "]!").c_str());
+}
+
+string config::getNewTransactionId() {
+	return macAddress + TRANSACTION_ID_SEPARATOR + id + TRANSACTION_ID_SEPARATOR + to_string(time(NULL));
 }
 
 
