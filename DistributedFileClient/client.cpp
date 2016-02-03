@@ -7,6 +7,8 @@
 
 #include <boost/asio.hpp> // must be after logging (otherwise you get linker error, don't know why)
 
+#include "config.h"
+
 using namespace boost::asio;
 
 static const int HEADER_LENGTH = 5;
@@ -44,17 +46,25 @@ std::string makeRequest() {
 	return makeHeader(req.size()) + req;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
 	// global logging filter
-	boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::trace);
+	boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::debug);
+
+	if (argc != 2) {
+		std::cout << "Usage: " << argv[0] << " config_file_full_path" << std::endl;
+		exit(EXIT_FAILURE);
+	}
+	std::string configFileFullPath = argv[1];
 
 	try
 	{
+		config config(configFileFullPath);
+
 		// preparing new socket
 		io_service io_service;
 		ip::tcp::socket socket(io_service);
-		socket.connect(ip::tcp::endpoint(ip::address_v4::from_string("127.0.0.1"), 8183));
+		socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getServerConfig(3).getHostname()), config.getServerConfig(3).getPort()));
 
 		// sending request
 		std::string request = makeRequest();
