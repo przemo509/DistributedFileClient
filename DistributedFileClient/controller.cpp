@@ -82,23 +82,27 @@ void controller::handleRead() {
 
 	string request = makeReadMessage(transactionId, fileName);
 	string response = getResponse(serverConfig, request);
-	cout << "File content is:" << endl << response << endl;
+	ptree tree = fromString(response);
+	string fileContent = tree.get<string>(DATA);
+	cout << "File content is: " << fileContent << endl;
 }
 
 void controller::handleWrite() {
 	server_config serverConfig = getServerFromUser();
 	string fileName = getFileNameFromUser();
-	cout << "Type file content:" << endl;
+	cout << "File content:" << endl;
 	string fileContent = getUserInput();
 
 	string request = makeWriteMessage(transactionId, fileName, fileContent);
 	string response = getResponse(serverConfig, request);
-	cout << "File write response:" << endl << response << endl;
+	ptree tree = fromString(response);
+	string name = tree.get<string>(NAME);
+	cout << "File write response: " << name << endl;
 }
 
 server_config controller::getServerFromUser() {
 	while (true) {
-		cout << "Type server ID:" << endl;
+		cout << "Server ID:" << endl;
 		string userInput = getUserInput();
 		if (!isNumber(userInput)) {
 			cout << "That is not a number" << endl;
@@ -127,7 +131,7 @@ bool controller::isNumber(string s) {
 
 string controller::getFileNameFromUser() {
 	while (true) {
-		cout << "Type file name:" << endl;
+		cout << "File name:" << endl;
 		string userInput = getUserInput();
 		if (userInput.empty()) {
 			cout << "Empty file name is not accepted" << endl;
@@ -138,12 +142,27 @@ string controller::getFileNameFromUser() {
 }
 
 void controller::handlePrepare() {
+	bool abort = false;
 	for (auto id : serversInTransaction) {
 		server_config serverConfig = cfg.getServerConfig(id);
-
 		string request = makePrepareMessage(transactionId);
 		string response = getResponse(serverConfig, request);
-		cout << "Server " << id << " responded to prepare:" << endl << response << endl;
+		ptree tree = fromString(response);
+		string name = tree.get<string>(NAME);
+		cout << "Server " << id << " responded to prepare:" << endl << name << endl;
+		if (name == MSG_VOTE_ABORT) {
+			abort = true;
+		}
+	}
+
+	cout << "Sending global " << (abort ? "abort" : "commit") << " to all servers in transaction..." << endl;
+	string request = abort ? makeGlobalAbortMessage(transactionId) : makeGlobalCommitMessage(transactionId);
+	for (auto id : serversInTransaction) {
+		server_config serverConfig = cfg.getServerConfig(id);
+		string response = getResponse(serverConfig, request);
+		ptree tree = fromString(response);
+		string name = tree.get<string>(NAME);
+		cout << "Server " << id << " responded to global " << (abort ? "abort" : "commit") << ":" << endl << name << endl;
 	}
 }
 

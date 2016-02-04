@@ -22,6 +22,13 @@ static const string MSG_VOTE_COMMIT = "vote_commit";
 static const string MSG_GLOBAL_ABORT = "global_abort";
 static const string MSG_GLOBAL_COMMIT = "global_commit";
 
+ptree fromString(string s) {
+	stringstream ss(s);
+	ptree tree;
+	read_json(ss, tree);
+	return tree;
+}
+
 string toString(ptree& tree) {
 	stringstream ss;
 	write_json(ss, tree);
@@ -49,11 +56,21 @@ string makeWriteMessage(string transactionId, string filename, string fileConten
 	return toString(tree);
 }
 
-string makePrepareMessage(string transactionId) {
+string makeSimpleMessage(string messageName, string transactionId) {
 	ptree tree;
-
-	tree.put(NAME, MSG_PREPARE);
+	tree.put(NAME, messageName);
 	tree.put(TRANSACTION_ID, transactionId);
-
 	return toString(tree);
+}
+
+string makePrepareMessage(string transactionId) {
+	return makeSimpleMessage(MSG_PREPARE, transactionId);
+}
+
+string makeGlobalCommitMessage(string transactionId) {
+	return makeSimpleMessage(MSG_GLOBAL_COMMIT, transactionId);
+}
+
+string makeGlobalAbortMessage(string transactionId) {
+	return makeSimpleMessage(MSG_GLOBAL_ABORT, transactionId);
 }
