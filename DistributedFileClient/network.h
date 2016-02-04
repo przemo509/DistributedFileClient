@@ -15,10 +15,10 @@ static const int HEADER_LENGTH = 5;
 void assertResponseOk(size_t bytesReceived, int assumedLength, boost::system::error_code& errorCode) {
 	if (errorCode != 0) {
 		// TODO handle eof when server gets down
-		throw new exception(("Exception while reading response: error: " + errorCode.message()).c_str());
+		throw exception(("Exception while reading response: error: " + errorCode.message()).c_str());
 	}
 	if (bytesReceived != assumedLength) {
-		throw new exception(string("Exception while reading response: unexpected length: " + bytesReceived).c_str());
+		throw exception(string("Exception while reading response: unexpected length: " + bytesReceived).c_str());
 	}
 }
 

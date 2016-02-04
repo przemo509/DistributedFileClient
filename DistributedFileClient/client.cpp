@@ -31,6 +31,10 @@ int main(int argc, char* argv[])
 	{
 		BOOST_LOG_TRIVIAL(fatal) << "Exception: [" << e.what() << "]";
 	}
+	catch (...)
+	{
+		BOOST_LOG_TRIVIAL(fatal) << "Unknown exception";
+	}
 
 	system("pause");
 	return 0;
