@@ -4,7 +4,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-using boost::property_tree::ptree;
+using namespace boost::property_tree;
 using namespace std;
 
 static const string NAME = "name";
