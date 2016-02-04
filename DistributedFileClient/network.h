@@ -45,32 +45,44 @@ string addHeader(string& request) {
 }
 
 string getResponse(server_config& config, string request) {
-		// preparing new socket
-		io_service io_service;
-		ip::tcp::socket socket(io_service);
-		socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getHostname()), config.getPort()));
+	// preparing new socket
+	io_service io_service;
+	ip::tcp::socket socket(io_service);
+	socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getHostname()), config.getPort()));
 
-		// sending request
-		BOOST_LOG_TRIVIAL(debug) << "Sending request:\n" << request;
-		write(socket, buffer(addHeader(request)));
-		BOOST_LOG_TRIVIAL(debug) << "Request sent";
+	// sending request
+	BOOST_LOG_TRIVIAL(debug) << "Sending request:\n" << request;
+	write(socket, buffer(addHeader(request)));
+	BOOST_LOG_TRIVIAL(debug) << "Request sent";
 
-		// receiving response header (number of remaining bytes)
-		boost::system::error_code errorCode;
-		boost::asio::streambuf buf;
-		BOOST_LOG_TRIVIAL(debug) << "Waiting for response length header...";
-		size_t bytesReceived = read(socket, buf, boost::asio::detail::transfer_exactly_t(HEADER_LENGTH), errorCode);
-		assertResponseOk(bytesReceived, HEADER_LENGTH, errorCode);
-		int responseLength = getResponseLength(buf);
-		//buf.consume(bytesReceived); // clear buf
-		BOOST_LOG_TRIVIAL(debug) << "Response length header received: " << responseLength;
+	// receiving response header (number of remaining bytes)
+	boost::system::error_code errorCode;
+	boost::asio::streambuf buf;
+	BOOST_LOG_TRIVIAL(debug) << "Waiting for response length header...";
+	size_t bytesReceived = read(socket, buf, boost::asio::detail::transfer_exactly_t(HEADER_LENGTH), errorCode);
+	assertResponseOk(bytesReceived, HEADER_LENGTH, errorCode);
+	int responseLength = getResponseLength(buf);
+	//buf.consume(bytesReceived); // clear buf
+	BOOST_LOG_TRIVIAL(debug) << "Response length header received: " << responseLength;
 
-		// receiving response body
-		BOOST_LOG_TRIVIAL(debug) << "Waiting for response body...";
-		bytesReceived = read(socket, buf, boost::asio::detail::transfer_exactly_t(responseLength), errorCode);
-		assertResponseOk(bytesReceived, responseLength, errorCode);
-		string response = getBufAsString(buf);
-		BOOST_LOG_TRIVIAL(debug) << "Response body received:\n" << response;
+	// receiving response body
+	BOOST_LOG_TRIVIAL(debug) << "Waiting for response body...";
+	bytesReceived = read(socket, buf, boost::asio::detail::transfer_exactly_t(responseLength), errorCode);
+	assertResponseOk(bytesReceived, responseLength, errorCode);
+	string response = getBufAsString(buf);
+	BOOST_LOG_TRIVIAL(debug) << "Response body received:\n" << response;
 
-		return response;
+	return response;
+}
+
+void sendWithoutResponse(server_config& config, string request) {
+	// preparing new socket
+	io_service io_service;
+	ip::tcp::socket socket(io_service);
+	socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getHostname()), config.getPort()));
+
+	// sending request
+	BOOST_LOG_TRIVIAL(debug) << "Sending request without response:\n" << request;
+	write(socket, buffer(addHeader(request)));
+	BOOST_LOG_TRIVIAL(debug) << "Request sent";
 }
