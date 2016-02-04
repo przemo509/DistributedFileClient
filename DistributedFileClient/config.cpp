@@ -19,21 +19,21 @@ const string config::TRANSACTION_ID_SEPARATOR = "|";
 
 config::config(const string& pathToFile)
 {
-	BOOST_LOG_TRIVIAL(info) << "Reading client configuration file [" << pathToFile << "]:";
+	BOOST_LOG_TRIVIAL(debug) << "Reading client configuration file [" << pathToFile << "]:";
 	ptree tree;
 	read_json(pathToFile, tree);
 
 	logFileFullPath = tree.get<string>("log_file_full_path");
-	BOOST_LOG_TRIVIAL(info) << " - log file is            " << logFileFullPath;
+	BOOST_LOG_TRIVIAL(debug) << " - log file is            " << logFileFullPath;
 	id = tree.get<string>("id");
-	BOOST_LOG_TRIVIAL(info) << " - client id is           " << id;
+	BOOST_LOG_TRIVIAL(debug) << " - client id is           " << id;
 	macAddress = getMAC("Intel(R) Centrino(R) Wireless-N 2230");
-	BOOST_LOG_TRIVIAL(info) << " - client mac address is  " << macAddress;
+	BOOST_LOG_TRIVIAL(debug) << " - client mac address is  " << macAddress;
 
 	setServers(tree.get_child("servers"));
 
 	check();
-	BOOST_LOG_TRIVIAL(info) << "Reading server configuration file - OK";
+	BOOST_LOG_TRIVIAL(debug) << "Reading server configuration file - OK";
 }
 
 string config::getMAC(string networkCardName) {

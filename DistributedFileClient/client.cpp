@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 	try
 	{
 		// global logging filter
-		boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::debug);
+		boost::log::core::get()->set_filter(boost::log::trivial::severity >= boost::log::trivial::info);
 
 		if (argc != 2) {
 			cout << "Usage: " << argv[0] << " config_file_full_path" << endl;
