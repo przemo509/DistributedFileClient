@@ -159,9 +159,11 @@ void controller::handlePrepare() {
 	string request = abort ? makeGlobalAbortMessage(transactionId) : makeGlobalCommitMessage(transactionId);
 	for (auto id : serversInTransaction) {
 		server_config serverConfig = cfg.getServerConfig(id);
-		sendWithoutResponse(serverConfig, request);
+		string response = getResponse(serverConfig, request);
+		ptree tree = fromString(response);
+		string name = tree.get<string>(NAME);
+		cout << "Server " << id << " responded to global " << (abort ? "abort" : "commit") << ":" << endl << name << endl;
 	}
-	cout << "Global " << (abort ? "abort" : "commit") << " sent." << endl;
 }
 
 void controller::clearTransaction() {

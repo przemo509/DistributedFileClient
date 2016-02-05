@@ -75,16 +75,3 @@ string getResponse(server_config& config, string request) {
 
 	return response;
 }
-
-void sendWithoutResponse(server_config& config, string request) {
-	// preparing new socket
-	io_service io_service;
-	ip::tcp::socket socket(io_service);
-	socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getHostname()), config.getPort()));
-	
-	// sending request
-	string requestWithHeader = addHeader(request);
-	BOOST_LOG_TRIVIAL(debug) << "Sending request without response:\n" << requestWithHeader;
-	write(socket, buffer(requestWithHeader));
-	BOOST_LOG_TRIVIAL(debug) << "Request sent";
-}
