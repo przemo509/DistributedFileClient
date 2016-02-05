@@ -51,8 +51,9 @@ string getResponse(server_config& config, string request) {
 	socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getHostname()), config.getPort()));
 
 	// sending request
-	BOOST_LOG_TRIVIAL(debug) << "Sending request:\n" << request;
-	write(socket, buffer(addHeader(request)));
+	string requestWithHeader = addHeader(request);
+	BOOST_LOG_TRIVIAL(debug) << "Sending request:\n" << requestWithHeader;
+	write(socket, buffer(requestWithHeader));
 	BOOST_LOG_TRIVIAL(debug) << "Request sent";
 
 	// receiving response header (number of remaining bytes)
@@ -80,9 +81,10 @@ void sendWithoutResponse(server_config& config, string request) {
 	io_service io_service;
 	ip::tcp::socket socket(io_service);
 	socket.connect(ip::tcp::endpoint(ip::address_v4::from_string(config.getHostname()), config.getPort()));
-
+	
 	// sending request
-	BOOST_LOG_TRIVIAL(debug) << "Sending request without response:\n" << request;
-	write(socket, buffer(addHeader(request)));
+	string requestWithHeader = addHeader(request);
+	BOOST_LOG_TRIVIAL(debug) << "Sending request without response:\n" << requestWithHeader;
+	write(socket, buffer(requestWithHeader));
 	BOOST_LOG_TRIVIAL(debug) << "Request sent";
 }
